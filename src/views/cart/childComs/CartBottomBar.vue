@@ -65,9 +65,10 @@
           }
         }
       },
-          //点击去计算
+      //点击去计算
       calcClick(){
-        if(!this.isSelectAll){   //如果一件商品都没有选时点击结算
+        let tag = (this.cartList.filter(item => item.checked).length)
+        if(!tag){   //如果选中的商品列表长度为零,即一件商品都没有选中时;
           this.$toast.show("请选择要购买的商品")
         }
       }

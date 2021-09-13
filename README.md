@@ -1,4 +1,4 @@
-# mall+
+# mallPlus
 
 ## Project setup
 ```

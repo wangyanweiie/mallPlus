@@ -1,6 +1,6 @@
 <template>
   <TabBar>
-    <!--路径使用别名-->
+    <!--路径与颜色本身就需要传入字符串,故不需要动态绑定:-->
     <TabBarItem path="/home" activeColor="#ff5777">
       <img slot="item-icon" src="~assets/img/tabbar/home.svg" alt="">
       <img slot="item-icon-active" src="~assets/img/tabbar/home_active.svg" alt="">

@@ -3,7 +3,7 @@
     <detail-nav-bar @titleClick='titleClick' ref="nav"></detail-nav-bar>
     <scroll class="content"
             ref="scroll"
-            @scroll="barScroll"
+            @barScroll="barScroll"
             :probe-tybe='3'>
       <detail-swiper :top-images="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
@@ -67,14 +67,16 @@ export default {
       commentInfo: {},     //评论信息
       recommendInfo: [],   //推荐页信息
       themeTopYs: [],      //标题对应组件的高度值
-      getThemeTopY: null,
       currentIndex: 0,     //当前高亮的标题索引
+      getThemeTopYs: null,
+      newRefresh: null,
       isShowBackTop: false //返回顶部是否显示
     }
   },
   created(){
-    //1.保存传入的id,根据id获取服务器中的详情页数据;
+    //1.保存传入的id
     this.iid = this.$route.params.id;
+    //2.根据id获取服务器中的详情页数据;
     getDetail(this.iid).then(res => {
       const data = res.result;
       this.topImages = data.itemInfo.topImages;                                     //轮播图数据
@@ -85,24 +87,19 @@ export default {
       if (data.rate.list) {                                                         //评论信息
         this.commentInfo = data.rate.list[0];
       }
-      //读取商品/参数/评论/推荐距离顶部的高度
-      //1.直接读取会有undefined,因为虽然已经赋值完毕但浏览器需要时间进行渲染;
-      //2.要调用nextTick()当渲染完成执行回调函数可以读取到正确的高度值;
-      this.$nextTick(()=>{
-        this.themeTopYs.push(0);
-        this.themeTopYs.push(this.$refs.param.$el.offsetTop);
-        this.themeTopYs.push(this.$refs.comment.$el.offsetTop);
-        this.themeTopYs.push(this.$refs.recommend.$el.offsetTop);
-        //console.log(this.themeTopYs)
-      })
     });
     //3.根据id获取服务器中推荐数据
     getRecommend().then(res => {
       this.recommendInfo = res.data.list;
     })
-    //4.给getThemeTopY赋值: 调用防抖返回一个新的函数
-    //读取商品/参数/评论/推荐距离顶部的高度
-    this.getThemeTopY = debounce(()=>{
+    //4.给getThemeTopYs赋值
+    //封装读取商品/参数/评论/推荐距离顶部的高度的函数
+    /**************************************************************************
+      1.在mounted中调用会有undefined,因为虽然已经赋值完毕但浏览器需要时间进行渲染;
+      2.调用nextTick()可以在DOM渲染完成执行回调函数,但依然会有图片后加载完成的问题;
+      3.封装调用防抖之后返回的新函数,在详情页商品图片加载完成后进行调用;  √√
+    ***************************************************************************/
+    this.getThemeTopYs = debounce(()=>{
       this.themeTopYs = [];
       this.themeTopYs.push(0);
       this.themeTopYs.push(this.$refs.param.$el.offsetTop);
@@ -112,26 +109,20 @@ export default {
     },200)
   },
   mounted(){
-    //调用防抖处理:形成闭包refresh不会消失;
-    //1.监听推荐页的图片加载(复用goodlistitem)
-    const refresh = debounce(this.$refs.scroll.refresh,200);
+    //直接调用防抖处理保存返回的新函数;
+    //1.监听推荐页的图片加载 (复用goodlistitem)
+    this.newRefresh = debounce(this.$refs.scroll.refresh,200);
     this.$bus.$on('itemImageLoad',()=>{
-      refresh()
+      this.newRefresh()
     })
   },
   methods:{
     //mapActions辅助函数: 可以将actions中的方法映射到组件的methods中直接调用
     ...mapActions(['addCart']),
-    //2.监听详情页的图片加载
+    //2.监听详情页的图片加载: 此处直接调用防抖处理不行 ??
     goodsImageLoad(){
-      //调用防抖:此时形成没有闭包变量不会被保存,执行多次没有意义？？(xx封装mixin)
-      //debounce(this.$refs.scroll.refresh,200);
-      this.getThemeTopY();
-      /***********************************************************************
-       1.在mounted中读取会有undefined,因为虽然已经赋值完毕但浏览器需要时间进行渲染;
-       2.调用nextTick()可以在DOM渲染完成执行回调函数,但依然会有图片后加载完成的问题;
-       3.给getThemeTopY赋值为调用防抖返回的新函数,在详情页图片加载完成后调用
-      ************************************************************************/
+      this.newRefresh();
+      this.getThemeTopYs();
     },
     //点击跳转到各个主题的offsetTop值
     titleClick(index){
@@ -143,15 +134,13 @@ export default {
     },
     //设置滚动区域对应的标题高亮
     barScroll(position){
-      const positionY = -position.y;
-      const length = this.themeTopYs.length
+      const site = Math.abs(position.y);
+      const length = this.themeTopYs.length;
+      //由于添加了一个额外的最大值 (遍历:length-1即可)
+      //currentIndex != i 即在同一区域时不需要处理,只有在切换区域时才执行语句;
       for(let i=0; i< length; i++){
-        //由于添加了一个额外的最大值(遍历:length-1即可)
-        if(this.currentIndex != i &&
-        (i < length-1 && positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i+1]))
-        {
+        if(this.currentIndex != i &&(site >= this.themeTopYs[i] && site < this.themeTopYs[i+1])){
           this.currentIndex = i;
-          console.log(this.currentIndex);
           this.$refs.nav.currentIndex = this.currentIndex;
         }
       }

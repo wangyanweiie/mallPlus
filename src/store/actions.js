@@ -3,7 +3,7 @@
 import {
   ADD_COUNT,
   ADD_TO_CART
-} from "./mutations-types"
+} from "./const-type"
 
 export default {
   //加入到购物车列表: payload是新添加的商品

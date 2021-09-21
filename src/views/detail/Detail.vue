@@ -95,9 +95,10 @@ export default {
     //4.给getThemeTopYs赋值
     //封装读取商品/参数/评论/推荐距离顶部的高度的函数
     /**************************************************************************
-      1.在mounted中调用会有undefined,因为虽然已经赋值完毕但浏览器需要时间进行渲染;
-      2.调用nextTick()可以在DOM渲染完成执行回调函数,但依然会有图片后加载完成的问题;
-      3.封装调用防抖之后返回的新函数,在详情页商品图片加载完成后进行调用;  √√
+      1.在created中调用报错,因为此时压根不能获取到页面元素;
+      2.在mounted中调用会有值为undefined,因为虽然已经赋值完毕但浏览器需要时间进行渲染;
+      3.调用nextTick()可以在DOM渲染完成执行回调函数,但依然会有图片后加载完成的问题;
+      4.封装调用防抖之后返回的新函数,在详情页商品图片加载完成后进行调用;  √√
     ***************************************************************************/
     this.getThemeTopYs = debounce(()=>{
       this.themeTopYs = [];
@@ -157,7 +158,7 @@ export default {
       product.iid = this.iid;
 
       //2.将商品信息添加store.state中-------(补充: Promise 与 mapActions)
-      /*vuex修改state需要通过 mutations,不能直接修改state的值;当存在异步与逻辑判断的操作时需要再经过 actions*/
+      //修改state需要通过mutations,不能直接修改state的值,而当存在异步与逻辑判断时又需要先经过 actions;
       //this.$store.cartList.push(product);     xxx
       //this.$store.commit("addCart",product);  xxx
       //this.$store.dispatch("addCart",product).then(res => this.$toast.show(res));

@@ -3,7 +3,7 @@
 import {
   ADD_COUNT,
   ADD_TO_CART
-} from "./mutations-types"
+} from "./const-type"
 
 export default {
   [ADD_COUNT](state,payload){

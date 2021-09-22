@@ -16,11 +16,11 @@ export default {
     };
   },
   methods: {
+    //调用后一定时间后隐藏,并清空上次传入的文字;
     show(message = '购物愉快！',duration = 1500){
       this.isShow = true
       this.message = message
       setTimeout(() => {
-        //一定时间后隐藏toast
          this.isShow = false
          this.message = ''
       }, duration);

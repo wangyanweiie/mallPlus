@@ -31,20 +31,13 @@
       },
       //选中的数量: 过滤出选中商品列表的长度
       checkLength(){
-        //return this.cartList.filter(item => {return item.checked;}).length
         return this.cartList.filter(item => item.checked).length
       },
       //全选按钮的状态: 查找出未选中的商品列表,若不存在则全选,取反为true; 存在则没有全选,取反为false;
       isSelectAll(){
         if(this.cartList.length === 0) return false;
-        //return !(this.cartList.find(item => !item.checked))               // 1.find
-        //return !(this.cartList.filter(item => !item.checked).length)      // 2.filter
-        for(let item of this.cartList){                                     // 3.普通遍历
-          if(!item.checked){
-            return false;
-          }
-        }
-        return true;
+        return !(this.cartList.find(item => !item.checked))               //1.find
+        //return !(this.cartList.filter(item => !item.checked).length)    //2.filter
       }
 	  },
     methods:{
@@ -52,8 +45,8 @@
       checkClick(){
         //若计算属性isSelectAll的返回值为ture,则代表已经全选,点击全选按钮则全部不选中;
         if(this.isSelectAll){
-          //this.cartList.forEach(item => item.checked = false)      // 1.forEach
-          for(let item of this.cartList){                            // 2.普通遍历
+          //this.cartList.forEach(item => item.checked = false)      //1.forEach
+          for(let item of this.cartList){                            //2.普通遍历
             item.checked = false;
           }
         }
@@ -65,10 +58,10 @@
           }
         }
       },
-      //点击去计算
+      //点击去计算:当选中的商品列表长度为零,即一件商品都没有选中时;
       calcClick(){
         let tag = (this.cartList.filter(item => item.checked).length)
-        if(!tag){   //如果选中的商品列表长度为零,即一件商品都没有选中时;
+        if(!tag){
           this.$toast.show("请选择要购买的商品")
         }
       }
